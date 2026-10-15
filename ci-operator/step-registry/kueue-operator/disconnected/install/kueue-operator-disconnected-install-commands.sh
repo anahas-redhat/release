@@ -178,6 +178,14 @@ if test -s "${SHARED_DIR}/env" ; then
     source "${SHARED_DIR}/env"
 fi
 
+# Retry cluster API contact - protects against transient build-farm DNS blips
+for i in $(seq 1 90); do
+    oc whoami >/dev/null 2>&1 && break
+    echo "Cluster API unreachable (attempt ${i}/90); retrying in 10s..."
+    sleep 10
+done
+oc whoami
+
 export TMP_DIR=/tmp/mirror-operators
 export OC_MIRROR_OUTPUT_DIR="${TMP_DIR}/working-dir/cluster-resources"
 export XDG_RUNTIME_DIR="${TMP_DIR}/run"
